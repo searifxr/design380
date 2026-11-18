@@ -13,8 +13,8 @@ export function editorReducer(s: EditorState, a: Action): EditorState {
   switch (a.type) {
     case "set": return a.record === false ? { ...s, present: a.doc } : { past: [...s.past, s.present].slice(-80), present: a.doc, future: [] };
     case "checkpoint": return { past: [...s.past, s.present].slice(-80), present: s.present, future: [] };
-    case "undo": return s.past.length ? { past: s.past.slice(0, -1), present: s.past[s.past.length - 1], future: [s.present, ...s.future] } : s;
-    case "redo": return s.future.length ? { past: [...s.past, s.present], present: s.future[0], future: s.future.slice(1) } : s;
+    case "undo": return s.past.length ? { past: s.past.slice(0, -1), present: s.past[s.past.length - 1]!, future: [s.present, ...s.future] } : s;
+    case "redo": return s.future.length ? { past: [...s.past, s.present], present: s.future[0]!, future: s.future.slice(1) } : s;
     case "reset": return { past: [], present: a.doc, future: [] };
   }
 }

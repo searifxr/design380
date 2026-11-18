@@ -261,7 +261,7 @@ function Props({ p, onChange, onRemove, onDuplicate }: { p: PlacedItem; onChange
       </Field>
       <Field label={`Rotation · ${Math.round(p.rotation)}°`}>
         <div className="flex items-center gap-2">
-          <Slider value={[p.rotation]} min={0} max={359} step={1} onValueChange={([r]) => onChange(clampItem({ ...p, rotation: r }, "truck"))} className="flex-1" />
+          <Slider value={[p.rotation]} min={0} max={359} step={1} onValueChange={([r]) => onChange({ ...p, rotation: r ?? 0 })} className="flex-1" />
           <IconBtn label="Rotate 90°" onClick={() => onChange({ ...p, rotation: (p.rotation + 90) % 360 })}><RotateCw /></IconBtn>
         </div>
       </Field>
@@ -327,7 +327,7 @@ function VehiclePicker({ onPick }: { onPick: (v: VehicleType) => void }) {
           </button>
         ))}
       </div>
-      <p className="mt-8 text-sm text-muted-foreground">Have a saved design? <Link to="/designs" className="text-primary underline-offset-4 hover:underline">Open My Designs</Link></p>
+      
     </div>
   );
 }
