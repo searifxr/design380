@@ -1,0 +1,100 @@
+@layer base { img, video { max-width: none; } html, body, html *, html::before, html::after, html *::before, html *::after, html *::marker, html *::placeholder, html *::file-selector-button { all: revert-layer; } }
+
+* { margin: 0px; padding: 0px; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: rgb(10, 10, 10); min-height: 100vh; padding: 20px; color: rgb(224, 224, 224); }
+.container {
+  margin: 0px auto;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+.main-content {
+  padding: 30px;
+}
+
+.car-selection { margin-bottom: 30px; }
+.car-selection h2 {
+  margin-bottom: 15px;
+}
+
+.car-type-btn {
+  padding: 15px;
+  border: 2px solid rgb(51,51,51);
+  border-radius: 4px;
+  color: rgb(136,136,136);
+}
+
+.car-type-btn:hover { border-color: rgb(85, 85, 85); color: rgb(170, 170, 170); }
+.car-type-btn.active {
+  border-color: rgb(255,215,0);
+  color: rgb(255,215,0);
+}
+
+.component-library {
+  padding: 20px;
+}
+
+.component-library h3 {
+  margin-bottom: 15px;
+}
+
+.component-item {
+  border: 1px solid rgb(51,51,51);
+  border-radius: 4px;
+  padding: 12px;
+  cursor: grab;
+  color: rgb(136,136,136);
+}
+
+.component-item:active { cursor: grabbing; }
+.component-item:hover { border-color: rgb(255, 215, 0); color: rgb(255, 215, 0); }
+.car-interior-wrapper {
+  padding: 20px;
+}
+
+.drag-preview.active { display: block; }
+
+
+
+
+
+
+
+.placed-component svg { display: block; }
+.component-menu {
+  padding: 5px;
+}
+
+.component-menu.active { display: flex; }
+.menu-btn {
+  background: rgb(10,10,10);
+  border: 1px solid rgb(85,85,85);
+  color: rgb(255,215,0);
+  border-radius: 3px;
+}
+
+.menu-btn:hover { background: rgb(255, 215, 0); color: rgb(10, 10, 10); border-color: rgb(255, 215, 0); }
+.controls {
+  padding: 15px;
+}
+
+.btn-clear {
+  padding: 10px 20px;
+  background: rgb(26,26,26);
+  color: rgb(255,215,0);
+}
+
+.btn-clear:hover { background: rgb(255, 215, 0); color: rgb(10, 10, 10); }
+.info span {
+  padding: 8px 15px;
+}
+
+
+
+
+
+
+
+
