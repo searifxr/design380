@@ -53,8 +53,8 @@ export const CATALOG: CatalogItem[] = [
 
 export const CATEGORIES: Category[] = ["Storage", "Comfort", "Technology", "Convenience"];
 export const getItem = (id: string) => CATALOG.find((c) => c.id === id)!;
-export const getColor = (id: string) => COLORS.find((c) => c.id === id) ?? COLORS[0];
-export const getMaterial = (id: string) => MATERIALS.find((m) => m.id === id) ?? MATERIALS[0];
+export const getColor = (id: string) => COLORS.find((c) => c.id === id) ?? COLORS[0]!;
+export const getMaterial = (id: string) => MATERIALS.find((m) => m.id === id) ?? MATERIALS[0]!;
 
 export interface Rect { x: number; y: number; w: number; h: number }
 export interface VehicleSpec { id: VehicleType; name: string; tagline: string; description: string; w: number; l: number; bounds: Rect }
