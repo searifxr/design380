@@ -85,6 +85,16 @@ export function Studio({ designId }: { designId?: string }) {
 
   const v = VEHICLES[vehicle];
 
+  if (preview && mode === "interior") {
+    return (
+      <ClientOnly fallback={<div className="grid h-[calc(100dvh-4rem)] place-items-center text-sm text-muted-foreground">Preparing the 3D cabin…</div>}>
+        <Suspense fallback={<div className="grid h-[calc(100dvh-4rem)] place-items-center text-sm text-muted-foreground">Preparing the 3D cabin…</div>}>
+          <InteriorStudio vehicle={vehicle} value={interior} onChange={setInterior} pricing={pricing} preview onExitPreview={() => setPreview(false)} />
+        </Suspense>
+      </ClientOnly>
+    );
+  }
+
   if (preview) {
     return (
       <div className="animate-in fade-in grid h-[calc(100dvh-4rem)] grid-cols-1 gap-6 p-6 lg:grid-cols-[1fr_360px]">
@@ -114,23 +124,32 @@ export function Studio({ designId }: { designId?: string }) {
     <div className="flex h-[calc(100dvh-4rem)] flex-col">
       <Toolbar
         name={name} setName={setName} vehicle={vehicle} onVehicle={(nv) => { if (nv === vehicle) return; items.length ? setPendingVehicle(nv) : switchVehicle(nv); }}
+        mode={mode} onModeChange={setMode}
         canUndo={state.past.length > 0} canRedo={state.future.length > 0} onUndo={() => dispatch({ type: "undo" })} onRedo={() => dispatch({ type: "redo" })}
         onClear={() => items.length && setConfirmClear(true)} onSave={save} onPreview={() => { setSelected(null); setPreview(true); }} onNew={newDesign}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr_320px]">
-        <Library onAdd={(id) => add(id)} />
-        <div className="relative min-h-[480px] p-4">
-          <Canvas vehicle={vehicle} items={items} selected={selected} view={view} setView={setView} onSelect={setSelected}
-            onBegin={() => dispatch({ type: "checkpoint" })} onChange={(p) => update(p, false)} onDrop={(id, x, y) => add(id, x, y)} />
-          <div className="absolute bottom-7 right-7 flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-            <IconBtn label="Zoom in" onClick={() => setViewState((c) => zoomCenter(c, 1.25, v))}><Plus /></IconBtn>
-            <IconBtn label="Zoom out" onClick={() => setViewState((c) => zoomCenter(c, 0.8, v))}><Minus /></IconBtn>
-            <IconBtn label="Reset view" onClick={() => setViewState(HOME_VIEW)}><Maximize /></IconBtn>
+      {mode === "interior" ? (
+        <ClientOnly fallback={<div className="grid flex-1 place-items-center text-sm text-muted-foreground">Preparing the 3D cabin…</div>}>
+          <Suspense fallback={<div className="grid flex-1 place-items-center text-sm text-muted-foreground">Preparing the 3D cabin…</div>}>
+            <InteriorStudio vehicle={vehicle} value={interior} onChange={setInterior} pricing={pricing} />
+          </Suspense>
+        </ClientOnly>
+      ) : (
+        <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr_320px]">
+          <Library onAdd={(id) => add(id)} />
+          <div className="relative min-h-[480px] p-4">
+            <Canvas vehicle={vehicle} items={items} selected={selected} view={view} setView={setView} onSelect={setSelected}
+              onBegin={() => dispatch({ type: "checkpoint" })} onChange={(p) => update(p, false)} onDrop={(id, x, y) => add(id, x, y)} />
+            <div className="absolute bottom-7 right-7 flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+              <IconBtn label="Zoom in" onClick={() => setViewState((c) => zoomCenter(c, 1.25, v))}><Plus /></IconBtn>
+              <IconBtn label="Zoom out" onClick={() => setViewState((c) => zoomCenter(c, 0.8, v))}><Minus /></IconBtn>
+              <IconBtn label="Reset view" onClick={() => setViewState(HOME_VIEW)}><Maximize /></IconBtn>
+            </div>
+            <div className="absolute left-7 top-7 rounded-md bg-card/80 px-2.5 py-1 text-[11px] text-muted-foreground backdrop-blur">{Math.round(view.k * 100)}%</div>
           </div>
-          <div className="absolute left-7 top-7 rounded-md bg-card/80 px-2.5 py-1 text-[11px] text-muted-foreground backdrop-blur">{Math.round(view.k * 100)}%</div>
+          <Inspector sel={sel} items={items} pricing={pricing} onChange={update} onRemove={remove} onDuplicate={duplicate} onSelect={setSelected} />
         </div>
-        <Inspector sel={sel} items={items} pricing={pricing} onChange={update} onRemove={remove} onDuplicate={duplicate} onSelect={setSelected} />
-      </div>
+      )}
 
       <AlertDialog open={!!pendingVehicle} onOpenChange={(o) => !o && setPendingVehicle(null)}>
         <AlertDialogContent>
@@ -160,10 +179,14 @@ function IconBtn({ label, onClick, children, disabled }: { label: string; onClic
   return <button type="button" aria-label={label} title={label} disabled={disabled} onClick={onClick} className="grid h-9 w-9 place-items-center text-foreground transition hover:bg-secondary disabled:opacity-30 [&_svg]:h-4 [&_svg]:w-4">{children}</button>;
 }
 
-function Toolbar(p: { name: string; setName: (s: string) => void; vehicle: VehicleType; onVehicle: (v: VehicleType) => void; canUndo: boolean; canRedo: boolean; onUndo: () => void; onRedo: () => void; onClear: () => void; onSave: () => void; onPreview: () => void; onNew: () => void }) {
+function Toolbar(p: { name: string; setName: (s: string) => void; vehicle: VehicleType; onVehicle: (v: VehicleType) => void; mode: "interior" | "layout"; onModeChange: (mode: "interior" | "layout") => void; canUndo: boolean; canRedo: boolean; onUndo: () => void; onRedo: () => void; onClear: () => void; onSave: () => void; onPreview: () => void; onNew: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-2.5">
       <Input value={p.name} onChange={(e) => p.setName(e.target.value)} aria-label="Design name" className="h-9 w-52 border-transparent bg-transparent font-medium hover:border-border focus:border-border" />
+      <div className="flex rounded-lg border border-border p-0.5" aria-label="Editor view">
+        <button type="button" onClick={() => p.onModeChange("interior")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${p.mode === "interior" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><Cube className="h-3.5 w-3.5" /> 3D Cabin</button>
+        <button type="button" onClick={() => p.onModeChange("layout")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${p.mode === "layout" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}><MapIcon className="h-3.5 w-3.5" /> 2D Layout</button>
+      </div>
       <div className="flex rounded-lg border border-border p-0.5">
         {(Object.keys(VEHICLES) as VehicleType[]).map((v) => (
           <button key={v} type="button" onClick={() => p.onVehicle(v)} className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${p.vehicle === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{VEHICLES[v].name}</button>
@@ -319,7 +342,7 @@ function VehiclePicker({ onPick }: { onPick: (v: VehicleType) => void }) {
       <p className="mt-2 max-w-xl text-muted-foreground">Each layout is drawn to scale so components fit like they would in your car.</p>
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         {(Object.values(VEHICLES)).map((v) => (
-          <button key={v.id} type="button" onClick={() => onPick(v.id)} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-left transition hover:-translate-y-1 hover:border-primary/60 hover:shadow-2xl">
+          <button key={v.id} type="button" data-testid={`vehicle-${v.id}`} onClick={() => onPick(v.id)} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-left transition hover:-translate-y-1 hover:border-primary/60 hover:shadow-2xl">
             <div className="flex h-72 items-center justify-center bg-canvas p-4">
               <svg viewBox={`-20 -20 ${v.w + 40} ${v.l + 40}`} className="h-full -rotate-90 transition duration-500 group-hover:scale-105" style={{ width: "auto" }}><VehicleSvg type={v.id} /></svg>
             </div>
