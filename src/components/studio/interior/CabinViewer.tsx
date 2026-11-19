@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, OrbitControls, RoundedBox } from "@react-three/drei";
 import { Maximize2, Minus, MousePointer2, Plus, RotateCcw } from "lucide-react";
@@ -373,18 +373,13 @@ export function CabinViewer({ vehicle, customization, selected, onSelect, preset
   onPresetChange: (preset: CameraPreset) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
-  const [resetKey, setResetKey] = useRef(0);
-  const zoomRef = useRef({ direction: 1, nonce: 0 });
-  const [, forceControls] = useForceRender();
+  const [resetKey, setResetKey] = useState(0);
+  const [zoomState, setZoomState] = useState({ direction: 1, nonce: 0 });
 
   const zoom = (direction: number) => {
-    zoomRef.current = { direction, nonce: zoomRef.current.nonce + 1 };
-    forceControls();
+    setZoomState((current) => ({ direction, nonce: current.nonce + 1 }));
   };
-  const reset = () => {
-    setResetKey.current += 1;
-    forceControls();
-  };
+  const reset = () => setResetKey((current) => current + 1);
   const fullscreen = async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -401,7 +396,7 @@ export function CabinViewer({ vehicle, customization, selected, onSelect, preset
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
         onPointerMissed={() => { document.body.style.cursor = "auto"; }}
       >
-        <CameraRig vehicle={vehicle} preset={preset} resetKey={resetKey.current} zoom={zoomRef.current} />
+        <CameraRig vehicle={vehicle} preset={preset} resetKey={resetKey} zoom={zoomState} />
         <CabinWorld vehicle={vehicle} customization={customization} selected={selected} onSelect={onSelect} />
         <ReadySignal container={container} />
       </Canvas>
@@ -429,18 +424,3 @@ export function CabinViewer({ vehicle, customization, selected, onSelect, preset
     </div>
   );
 }
-
-function useForceRender() {
-  const ref = useRef(0);
-  const subscribers = useRef(new Set<() => void>());
-  const value = ref.current;
-  const notify = () => { ref.current += 1; subscribers.current.forEach((fn) => fn()); };
-  // This tiny local subscription avoids putting camera gestures into global editor history.
-  const [, setState] = useUnsafeState(value);
-  subscribers.current.clear();
-  subscribers.current.add(() => setState(ref.current));
-  return [value, notify] as const;
-}
-
-// Isolated to keep all camera-control renders local to the viewer.
-import { useState as useUnsafeState } from "react";
