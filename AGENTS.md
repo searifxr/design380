@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+<!-- AGENT-MEMORY:BEGIN -->
+- The 3D cabin lives in `src/components/studio/interior/`; shared pure customization rules and vehicle-specific dimensions live in `src/lib/studio/interior.ts` so UI and scene geometry stay independent.
+- `CabinViewer` sets `data-scene-ready="true"` after its first rendered frame; browser checks should wait for that signal.
+<!-- AGENT-MEMORY:END -->
