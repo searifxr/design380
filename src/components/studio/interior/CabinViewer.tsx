@@ -88,7 +88,7 @@ function PartBox({
   style: ComponentStyle; selected: boolean; textures: Textures;
 }) {
   return (
-    <RoundedBox args={size} position={position} rotation={rotation} radius={radius} smoothness={3} castShadow receiveShadow>
+    <RoundedBox args={size} position={position} rotation={rotation ?? [0, 0, 0]} radius={radius} smoothness={3} castShadow receiveShadow>
       <Surface style={style} selected={selected} textures={textures} />
     </RoundedBox>
   );
@@ -198,7 +198,7 @@ function ReadySignal({ container }: { container: React.RefObject<HTMLDivElement 
   const ready = useRef(false);
   useFrame(() => {
     if (!ready.current && container.current) {
-      container.current.dataset.sceneReady = "true";
+      container.current.dataset["sceneReady"] = "true";
       ready.current = true;
     }
   });
