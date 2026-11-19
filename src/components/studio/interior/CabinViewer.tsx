@@ -84,7 +84,7 @@ function Surface({ style, selected, textures }: { style: ComponentStyle; selecte
 function PartBox({
   size, position, rotation, radius = 0.04, style, selected, textures,
 }: {
-  size: Vec3; position: Vec3; rotation?: Vec3; radius?: number;
+  size: Vec3; position: Vec3; rotation?: Vec3 | undefined; radius?: number;
   style: ComponentStyle; selected: boolean; textures: Textures;
 }) {
   return (
