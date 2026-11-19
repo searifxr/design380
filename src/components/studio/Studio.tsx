@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { ClientOnly } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-  Copy, Eye, FilePlus2, Maximize, Minus, Plus, Redo2, RotateCw, Save, Search, Trash2, Undo2, X, ArrowLeft, Car,
+  Copy, Eye, FilePlus2, Maximize, Minus, Plus, Redo2, RotateCw, Save, Search, Trash2, Undo2, X, ArrowLeft, Car, Box as Cube, Map as MapIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,9 @@ import { clampItem, editorReducer, makeItem } from "@/lib/studio/editor";
 import { computePricing, itemPrice, usd } from "@/lib/studio/pricing";
 import { getDesign, saveDesign } from "@/lib/studio/storage";
 import type { PlacedItem } from "@/lib/studio/types";
+import { createDefaultInterior } from "@/lib/studio/interior";
 
+const InteriorStudio = lazy(() => import("./interior/InteriorStudio").then((module) => ({ default: module.InteriorStudio })));
 const HOME_VIEW: View = { k: 1, x: 0, y: 0 };
 
 export function Studio({ designId }: { designId?: string }) {
@@ -29,6 +31,8 @@ export function Studio({ designId }: { designId?: string }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setViewState] = useState<View>(HOME_VIEW);
   const [preview, setPreview] = useState(false);
+  const [mode, setMode] = useState<"interior" | "layout">("interior");
+  const [interior, setInterior] = useState(() => createDefaultInterior());
   const [pendingVehicle, setPendingVehicle] = useState<VehicleType | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const setView = useCallback((fn: (v: View) => View) => setViewState(fn), []);
@@ -39,7 +43,7 @@ export function Studio({ designId }: { designId?: string }) {
   useEffect(() => {
     if (!designId) return;
     const d = getDesign(designId);
-    if (d) { dispatch({ type: "reset", doc: { vehicle: d.vehicle, items: d.items } }); setId(d.id); setName(d.name); setStarted(true); }
+    if (d) { dispatch({ type: "reset", doc: { vehicle: d.vehicle, items: d.items } }); setInterior(d.interior ?? createDefaultInterior()); setId(d.id); setName(d.name); setStarted(true); }
     else toast.error("That design could not be found");
   }, [designId]);
 
@@ -59,10 +63,10 @@ export function Studio({ designId }: { designId?: string }) {
   };
   const save = () => {
     const newId = id ?? crypto.randomUUID();
-    saveDesign({ id: newId, name: name.trim() || "Untitled design", vehicle, items, updatedAt: Date.now(), total: pricing.total });
+    saveDesign({ id: newId, name: name.trim() || "Untitled design", vehicle, items, interior, updatedAt: Date.now(), total: pricing.total });
     setId(newId); toast.success("Design saved", { description: "Find it any time under My Designs." });
   };
-  const newDesign = () => { dispatch({ type: "reset", doc: { vehicle, items: [] } }); setId(null); setName("Untitled design"); setSelected(null); setStarted(false); };
+  const newDesign = () => { dispatch({ type: "reset", doc: { vehicle, items: [] } }); setInterior(createDefaultInterior()); setId(null); setName("Untitled design"); setSelected(null); setStarted(false); };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

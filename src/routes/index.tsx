@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Studio } from "@/components/studio/Studio";
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   head: () => ({ meta: [
     { title: "Design 380 — Car Interior Studio" },
     { name: "description", content: "Design your car interior: drag accessories into a to-scale cabin and see an estimated cost." },
